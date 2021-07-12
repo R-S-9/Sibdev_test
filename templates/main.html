@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+
+{% load static %}
+{% csrf_token %}
+
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %} Sibdev {% endblock %}</title>
+    <link rel="stylesheet" type="text/css"
+          href="{% static 'css/style.css' %}"/>
+</head>
+
+{% block content %}
+    <body>
+    Empty
+    </body>
+{% endblock content %}
+
+</html>

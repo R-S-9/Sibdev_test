@@ -18,3 +18,7 @@ class PurchasedItemsForm(forms.ModelForm):
     class Meta:
         model = PurchasedItems
         fields = "__all__"
+
+
+class UploadFileForm(forms.Form):
+    file = forms.FileField()

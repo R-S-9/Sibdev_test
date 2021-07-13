@@ -31,7 +31,7 @@ class PurchasedItems(models.Model):
         blank=False
     )
 
-    total = models.DecimalField(max_digits=8)
+    total = models.DecimalField(max_digits=8, decimal_places=2)
 
     quantity = models.IntegerField(default=0)
 
@@ -47,3 +47,7 @@ class PurchasedItems(models.Model):
     class Meta:
         verbose_name = 'Предмет'
         verbose_name_plural = 'Предметы'
+
+
+class CsvDocument(models.Model):
+    csv_file = models.FileField(upload_to='documents')

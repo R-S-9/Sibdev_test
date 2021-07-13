@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 
+{% extends "main.html" %}
 {% load static %}
 {% csrf_token %}
 
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <title>{% block title %} Sibdev {% endblock %}</title>
@@ -14,12 +14,8 @@
 
 {% block content %}
     <body>
-        Выберите файл с которым хотите работать:<br><br>
-        <form method="post" enctype="multipart/form-data">
-            <input type="file" name="myfile" accept = ". xlsx, .xls, .csv">
-            <button type="submit">Отправить</button>
-        </form>
+        Ваши данные успешно отправлены и обработаны.<br><br>
+        {{ csv_file }}
     </body>
 {% endblock content %}
-
 </html>

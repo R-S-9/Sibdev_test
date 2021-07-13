@@ -14,7 +14,13 @@
 
 {% block content %}
     <body>
-    Empty
+        Empty<br>
+        <form enctype="multipart/form-data" method="post">
+            <p><input type = "file" ID = "fileSelect" accept = ". xlsx, .xls, .csv" />
+            <input type="submit" value="Отправить"></p>
+        </form>
+        <br>
+        <br>
     </body>
 {% endblock content %}
 

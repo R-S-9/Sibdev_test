@@ -1,6 +1,8 @@
 import csv
 
 from django.core.files.storage import FileSystemStorage
+from django.http import JsonResponse
+from django.db.models import Avg
 
 from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
@@ -16,10 +18,15 @@ def index(request):
         filename = fs.save(csv_file.name, csv_file)
 
         data = handle_uploaded_file(filename)
-        print(len(data))
+
+        if not data:
+            data = 'Произошла ошибка.\nВ отправленом вами файле нет данных.' \
+                   'Проверте файл и отправьте файл повторно.'
+        else:
+            data = data[:10]
 
         return render(request, 'csv_output.html', {
-            'csv_file': data[:10]
+            'csv_file': data
         })
     else:
         return render(request, 'main.html')
@@ -38,7 +45,7 @@ def handle_uploaded_file(file):
                 'item': content['item'],
                 'total': content['total'],
                 'quantity': content['quantity'],
-                'date': content['date'],
+                'date_time': content['date'],
             })
 
             post_form = CustomerLog.objects.create(
@@ -57,6 +64,21 @@ def handle_uploaded_file(file):
     return data
 
 
-def delet_all_db(request):
+def del_all_db(request):
     CustomerLog.objects.all().delete()
+
     return index(request)
+
+
+def top_clients(request):
+
+    data = CustomerLog.objects.filter(
+        id=1
+    )
+
+    for pr in data:
+        # avg_total = pr.customer_item.aggregate(Avg('total'))['total_avg']
+        # print(avg_total)
+        ...
+
+    return None

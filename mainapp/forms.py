@@ -1,4 +1,5 @@
 from django import forms
+
 from .models import CustomerLog, PurchasedItems
 
 
@@ -22,3 +23,6 @@ class PurchasedItemsForm(forms.ModelForm):
 
 class UploadFileForm(forms.Form):
     file = forms.FileField()
+
+
+

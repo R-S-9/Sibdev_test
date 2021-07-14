@@ -1,4 +1,5 @@
 from django.db import models
+
 from django.utils import timezone
 
 
@@ -14,7 +15,7 @@ class CustomerLog(models.Model):
     date = models.DateTimeField(verbose_name='Дата', default=timezone.now)
 
     def __str__(self):
-        return self.customer
+        return f'{self.customer}, дата: {self.date}'
 
     class Meta:
         verbose_name = 'Клиент'
@@ -42,12 +43,10 @@ class PurchasedItems(models.Model):
     )
 
     def __str__(self):
-        return f'{self.item}, кол-во: {self.quantity}, чек:{self.total}'
+        return f'{self.customer_item.customer} - {self.item}, ' \
+               f'кол-во: {self.quantity}, чек: {self.total}'
 
     class Meta:
         verbose_name = 'Предмет'
         verbose_name_plural = 'Предметы'
 
-
-class CsvDocument(models.Model):
-    csv_file = models.FileField(upload_to='documents')

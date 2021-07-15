@@ -1,10 +1,9 @@
 import csv
 
 from django.core.files.storage import FileSystemStorage
-from django.http import JsonResponse
-from django.db.models import Avg
 
 from django.shortcuts import render
+from django.utils.datastructures import MultiValueDictKeyError
 from django.views.decorators.csrf import csrf_exempt
 
 from .models import CustomerLog, PurchasedItems
@@ -12,24 +11,35 @@ from .models import CustomerLog, PurchasedItems
 
 @csrf_exempt
 def index(request):
-    if request.method == 'POST' and request.FILES['myfile']:
-        csv_file = request.FILES['myfile']
-        fs = FileSystemStorage()
-        filename = fs.save(csv_file.name, csv_file)
+    err = ''
 
-        data = handle_uploaded_file(filename)
+    if request.method == 'POST':
 
-        if not data:
-            data = 'Произошла ошибка.\nВ отправленом вами файле нет данных.' \
-                   'Проверте файл и отправьте файл повторно.'
-        else:
-            data = data[:10]
+        try:
+            file = request.FILES['myfile']
 
-        return render(request, 'csv_output.html', {
-            'csv_file': data
-        })
-    else:
-        return render(request, 'main.html')
+        except MultiValueDictKeyError:
+            file = None
+            err = 'Выберите файл для обработки, и отправиьте его.'
+
+        if file:
+            csv_file = request.FILES['myfile']
+            fs = FileSystemStorage()
+            filename = fs.save(csv_file.name, csv_file)
+
+            data = handle_uploaded_file(filename)
+
+            if not data:
+                data = 'Произошла ошибка.\nВ отправленом вами файле нет ' \
+                       'данных. Проверте файл и отправьте файл повторно.'
+            else:
+                data = data[:10]
+
+            return render(request, 'csv_output.html', {
+                'csv_file': data
+            })
+
+    return render(request, 'main.html', context={'err': err})
 
 
 def handle_uploaded_file(file):
@@ -45,7 +55,7 @@ def handle_uploaded_file(file):
                 'item': content['item'],
                 'total': content['total'],
                 'quantity': content['quantity'],
-                'date_time': content['date'],
+                'date_time': content['date'][:16],
             })
 
             post_form = CustomerLog.objects.create(
@@ -71,14 +81,4 @@ def del_all_db(request):
 
 
 def top_clients(request):
-
-    data = CustomerLog.objects.filter(
-        id=1
-    )
-
-    for pr in data:
-        # avg_total = pr.customer_item.aggregate(Avg('total'))['total_avg']
-        # print(avg_total)
-        ...
-
-    return None
+    ...

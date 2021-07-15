@@ -15,7 +15,7 @@ class CustomerLog(models.Model):
     date = models.DateTimeField(verbose_name='Дата', default=timezone.now)
 
     def __str__(self):
-        return f'{self.customer}, дата: {self.date}'
+        return f'{self.id}-{self.customer}, дата: {self.date}'
 
     class Meta:
         verbose_name = 'Клиент'
@@ -39,6 +39,7 @@ class PurchasedItems(models.Model):
     customer_item = models.ForeignKey(
         CustomerLog,
         verbose_name='Клиент',
+        related_name='pur_item',
         on_delete=models.CASCADE
     )
 

@@ -11,7 +11,8 @@
  ```
     cd ~
     git clone https://github.com/R-S-9/Sibdev_test
-    cd src Sibdev_test
+    cd path/Sibdev_test
+    pip install -r requirements.txt
  ```
 
 ## We collect the image with the command:

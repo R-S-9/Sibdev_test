@@ -17,7 +17,6 @@ def index(request):
     err = ''
 
     if request.method == 'POST':
-
         try:
             file = request.FILES['myfile']
 

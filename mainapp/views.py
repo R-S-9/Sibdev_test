@@ -1,4 +1,7 @@
 import csv
+import json
+
+import pandas as pd
 
 from django.core.files.storage import FileSystemStorage
 
@@ -33,17 +36,25 @@ def index(request):
                 data = 'Произошла ошибка.\nВ отправленом вами файле нет ' \
                        'данных. Проверте файл и отправьте файл повторно.'
             else:
-                data = data[:10]
+                data = len(data)
+
+            df = pd.read_csv('media/' + filename)
+
+            json_records = df.reset_index().to_json(orient='records')
+
+            geeks_object = json.loads(json_records)
 
             return render(request, 'csv_output.html', {
-                'csv_file': data
+                'csv_file': data,
+                'd': geeks_object,
+                'data': data
             })
 
     return render(request, 'main.html', context={'err': err})
 
 
 def handle_uploaded_file(file):
-    """Фун-ия для чтения и записи в переменную полученых данных"""
+    """Фун-ия для чтения и записи в bd полученых данных"""
 
     data = []
 

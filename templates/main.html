@@ -14,15 +14,24 @@
 
 {% block content %}
     <body>
-        Выберите файл с которым хотите работать:<br><br>
-        <form method="post" enctype="multipart/form-data">
-            <input type="file" name="myfile" accept = ". xlsx, .xls, .csv">
-            <button type="submit">Отправить</button>
-        </form>
-        <h4>{{ err }}<br></h4>
-        <br>
-        Прошу заметить, что в зависимости от кол-во данных в файле, процесс
-        обработки может занять определенное кол-во времени.
+        <div class="header">
+            <h1>Тестовое задание Sibdev</h1>
+            <hr >
+        </div>
+
+        <div class="task">
+            <h2>Выберите файл с которым хотите работать:</h2><br><br>
+            <form method="post" enctype="multipart/form-data">
+                <input type="file" name="myfile" accept = ". xlsx, .xls, .csv">
+                <button type="submit">Отправить</button>
+            </form>
+            <h4>{{ err }}<br></h4>
+            <br>
+            <h4>
+                Прошу заметить, что в зависимости от кол-во данных в файле, процесс
+                обработки может занять определенное кол-во времени.
+            </h4>
+        </div>
     </body>
 {% endblock content %}
 

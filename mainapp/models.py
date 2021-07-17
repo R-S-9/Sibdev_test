@@ -1,7 +1,5 @@
 from django.db import models
 
-from django.utils import timezone
-
 
 class CustomerLog(models.Model):
     """Модель клиента"""
@@ -12,7 +10,7 @@ class CustomerLog(models.Model):
         blank=False
     )
 
-    date = models.DateTimeField(verbose_name='Дата', default=timezone.now)
+    date = models.DateTimeField(verbose_name='Дата')
 
     def __str__(self):
         return f'{self.id}-{self.customer}, дата: {self.date}'

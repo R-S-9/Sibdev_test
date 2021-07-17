@@ -14,17 +14,44 @@
 
 {% block content %}
     <body>
-        Ваши данные успешно отправлены и обработаны.<br><br>
-        {{ formset.as_p }}
-<!--        {{ csv_file }}-->
-        {% for item in csv_file %}
-            Клиент - {{ item.customer }};
-            Предмет - {{ item.item }};
-            Количество - {{ item.quantity }};
-            Итог - {{ item.total }};
-            Дата - {{ item.date_time }}.
-            <br>
-        {% endfor %}
+        <div class="header">
+            <h1>Тестовое задание Sibdev</h1>
+            <hr>
+        </div>
+
+        <div class="task">
+            <h2>
+                Ваши данные успешно отправлены и обработаны.<br><br>
+                <u>Найдено данных в файле - {{ data }}</u><br>
+            </h2>
+                <h3>
+                <table class="table">
+                    <thead>
+                            <tr class="even">
+                                <th>Клиент</th>
+                                <th>Предмет</th>
+                                <th>Количество</th>
+                                <th>Итог</th>
+                                <th>Дата</th>
+                            </tr>
+                    </thead>
+
+                    <tbody>
+                        {% if d %}
+                            {% for i in d %}
+                                <tr>
+                                    <td class="la">{{ i.customer }}</td>
+                                    <td>{{ i.item }}</td>
+                                    <td>{{ i.quantity }}</td>
+                                    <td>{{ i.total }}</td>
+                                    <td>{{ i.date|truncatechars:17 }}</td>
+                                </tr>
+                            {% endfor %}
+                        {% endif %}
+                    </tbody>
+                </table>
+            </h3>
+        </div>
     </body>
 {% endblock content %}
 </html>

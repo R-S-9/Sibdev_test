@@ -1,15 +1,11 @@
 version: "3.9"
 
 services:
-  db:
-    image: sibdev_test_web
-    volumes:
-      - ./database.db:/db/db.db
   web:
     build: .
     command: python manage.py runserver 0.0.0.0:8000
     volumes:
-      - /usr/src/dm_api
+      - media: /usr/src/media/
     ports:
       - "8000:8000"
     depends_on:

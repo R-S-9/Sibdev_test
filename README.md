@@ -23,7 +23,7 @@
 ## Launch surrounded by the developer
 Launch image:
 ```
-    docker-compose up -d
+    docker-compose up —build
 ```
 Go to the url address: http://localhost:8000/
 

@@ -30,7 +30,7 @@ class PurchasedItems(models.Model):
         blank=False
     )
 
-    total = models.DecimalField(max_digits=8, decimal_places=2)
+    total = models.DecimalField(max_digits=14, decimal_places=2)
 
     quantity = models.IntegerField(default=0)
 

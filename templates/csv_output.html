@@ -19,6 +19,12 @@
             <hr>
         </div>
 
+        {% if output_data %}
+            --------------------------------------<br>
+            {{ output_data }}
+            ---------------------------------------<br>
+        {% else %}
+
         <div class="task">
             {% if csv_error %}
                 <h2>Произошла ошибка:<br> {{ csv_error }}</h2>
@@ -60,6 +66,9 @@
                 </table>
             </h3>
         </div>
+            --------------------
+    {% endif %}
+    ------------------------
     </body>
 {% endblock content %}
 </html>

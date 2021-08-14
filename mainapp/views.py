@@ -251,11 +251,8 @@ def top_clients(request):
             list_of_customer = list(OrderedDict.fromkeys(list_of_customer))
 
             if list_of_customer in last_value:
-                print(list_of_customer)
                 break
             else:
-                print('Добавлен')
-                # print(list_of_customer)
                 last_value.append(list_of_customer)
 
             gems_of_customer.append({

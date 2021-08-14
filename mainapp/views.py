@@ -1,5 +1,5 @@
 import csv
-import decimal
+from decimal import InvalidOperation
 import json
 import os
 from operator import itemgetter
@@ -15,61 +15,6 @@ from django.utils.datastructures import MultiValueDictKeyError
 from django.views.decorators.csrf import csrf_exempt
 
 from .models import CustomerLog, PurchasedItems
-
-
-@csrf_exempt
-def index(request):
-    err = ''
-
-    if request.method == 'POST':
-        try:
-            file = request.FILES['myfile']
-
-        except MultiValueDictKeyError:
-            file = None
-            err = 'Выберите файл для обработки, и отправиьте его.'
-
-        if file:
-            csv_file = request.FILES['myfile']
-            fs = FileSystemStorage()
-            filename = fs.save(csv_file.name, csv_file)
-
-            data = handle_uploaded_file(filename)
-
-            if not data:
-                err = 'Произошла ошибка.\nВ отправленом вами файле нет ' \
-                      'данных. Проверте файл и отправьте файл повторно.'
-
-            elif type(data) is str:
-                err = data
-
-            try:
-                df = pd.read_csv('media/' + filename)
-                json_records = df.reset_index().to_json(orient='records')
-                geeks_object = json.loads(json_records)
-            except UnicodeDecodeError:
-                err = 'Ошибка в кодировании или файле.'
-                geeks_object = False
-
-            except pd.errors.ParserError:
-                err = 'Ошибка файла.'
-                geeks_object = False
-
-            finally:
-                os.remove('media/' + filename)
-
-                if type(data) is list:
-                    data = len(data)
-                else:
-                    data = ''
-
-            return render(request, 'csv_output.html', {
-                'csv_error': err,
-                'd': geeks_object,
-                'data_len': data
-            })
-
-    return render(request, 'main.html', context={'err': err})
 
 
 def is_adv_digit(digit):
@@ -149,7 +94,7 @@ def handle_uploaded_file(media_file):
                         quantity=content['quantity'],
                     )
 
-                except decimal.InvalidOperation:
+                except InvalidOperation:
                     return 'Ваше число намного больше чем это прописано в ' \
                            'модели. Пожалуйста, проверьте точность данных ' \
                            'или измените модель total/max_digits=(на то ' \
@@ -175,12 +120,6 @@ def handle_uploaded_file(media_file):
     return data
 
 
-def del_all_db(request):
-    CustomerLog.objects.all().delete()
-
-    return index(request)
-
-
 def user_gems(data):
     list_of_gems = []
 
@@ -203,7 +142,7 @@ def user_gems(data):
     return gems
 
 
-def top_clients(request):
+def top_clients():
     last_value = ''
     customers = CustomerLog.objects.all().order_by('customer')
     customers_names = []
@@ -234,6 +173,7 @@ def top_clients(request):
 
     # Топ 5 клиентов (Логины, потраченые средства)
     data = data[:5]
+
     gems_customer = user_gems(data)
     lol = [item.get('username') for item in data]
     output_data = []
@@ -275,31 +215,83 @@ def top_clients(request):
         ]
 
         if len(identical_gems) == 1:
-            identical_gems = ''
+            gems_name = ''
+            del identical_gems
 
         output_data.append(
             {
                 'customer_log': customer_log,  # Покупатель.
                 'customer_top_spent_money': customer_top_spent_money,  # Сумма.
                 'gems_name': gems_name,  # Предмет покупки.
-                'identical_gems': identical_gems,  # Купил вместе с
-                # (из топ 5 покупателей).
             }
         )
-
-    # CustomerLog.objects.all().delete()
 
     if not output_data:
         output_data = 'Ошибка в файле. Повторите попытку загрузив данные с ' \
                       'файла снова'
 
-    # Цикл вывода данных из конечной переменной.
-    for i in output_data:
-        print('Покупатель: ' + str(i.get('customer_log')) + ', на сумму  ' +
-              str(i.get('customer_top_spent_money')) + '. купил -  ' +
-              str(i.get('gems_name')) + '.   кто купил:  ' +
-              str(i.get('identical_gems')) + '.')
+    # Удаляем данные из БД, что бы не конфликтовать с другими файлами, и топ 5
+    # работал для конкретного пользователя.
+    CustomerLog.objects.all().delete()
 
-    return render(request, 'csv_output.html', context={
-        'output_data': output_data
-    })
+    return output_data
+
+
+@csrf_exempt
+def index(request):
+    err = ''
+
+    if request.method == 'POST':
+        try:
+            file = request.FILES['myfile']
+
+        except MultiValueDictKeyError:
+            file = None
+            err = 'Выберите файл для обработки, и отправиьте его.'
+
+        if file:
+            csv_file = request.FILES['myfile']
+            fs = FileSystemStorage()
+            filename = fs.save(csv_file.name, csv_file)
+
+            data = handle_uploaded_file(filename)
+
+            if not data:
+                err = 'Произошла ошибка.\nВ отправленом вами файле нет ' \
+                      'данных. Проверте файл и отправьте файл повторно.'
+
+            elif type(data) is str:
+                err = data
+
+            try:
+                df = pd.read_csv('media/' + filename)
+                json_records = df.reset_index().to_json(orient='records')
+                geeks_object = json.loads(json_records)
+
+            except UnicodeDecodeError:
+                err = 'Ошибка в кодировании или файле.'
+                geeks_object = False
+
+            except pd.errors.ParserError:
+                err = 'Ошибка файла.'
+                geeks_object = False
+
+            finally:
+                os.remove('media/' + filename)
+
+                if type(data) is list:
+                    data = len(data)
+
+                else:
+                    data = ''
+
+            top_customer = top_clients()
+
+            return render(request, 'csv_output.html', {
+                'csv_error': err,
+                'top_customer': top_customer,
+                'd': geeks_object,
+                'data_len': data
+            })
+
+    return render(request, 'main.html', context={'err': err})

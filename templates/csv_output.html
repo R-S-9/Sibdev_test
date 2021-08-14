@@ -29,6 +29,32 @@
                 {% else %}
                     <h2>Ваши данные успешно отправлены и обработаны.</h2><br><br>
                 {% endif %}
+
+                {% if top_customer %}
+                    <h2>Топ 5 клиентов</h2>
+                    <h3>
+                        <table class="table">
+                            <thead>
+                                    <tr class="even">
+                                        <th>Клиент</th>
+                                        <th>Итог</th>
+                                        <th>Камни купили 2+</th>
+                                    </tr>
+                            </thead>
+                            <tbody>
+                                {% for i in top_customer %}
+                                    <tr>
+                                        <td class="la">{{ i.customer_log }}</td>
+                                        <td>{{ i.customer_top_spent_money }}</td>
+                                        <td>{{ i.gems_name }}</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </h3>
+
+                {% endif %}
+
                 {% if data_len %}
                     <h2><u>Найдено данных в файле - {{ data_len }}</u><br></h2>
                 {% endif %}

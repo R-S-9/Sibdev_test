@@ -19,56 +19,50 @@
             <hr>
         </div>
 
-        {% if output_data %}
-            --------------------------------------<br>
-            {{ output_data }}
-            ---------------------------------------<br>
-        {% else %}
-
         <div class="task">
             {% if csv_error %}
                 <h2>Произошла ошибка:<br> {{ csv_error }}</h2>
             <br>
-            <h2>Как выглядят выши данные в файле (с возможными ошибками)</h2><br><br>
-            {% else %}
-                <h2>Ваши данные успешно отправлены и обработаны.</h2><br><br>
-            {% endif %}
-            {% if data_len %}
-                <h2><u>Найдено данных в файле - {{ data_len }}</u><br></h2>
-            {% endif %}
-
+                {% if d %}
+                    <h2>Как выглядят выши данные в файле (с возможными ошибками)</h2><br><br>
+                {% endif %}
+                {% else %}
+                    <h2>Ваши данные успешно отправлены и обработаны.</h2><br><br>
+                {% endif %}
+                {% if data_len %}
+                    <h2><u>Найдено данных в файле - {{ data_len }}</u><br></h2>
+                {% endif %}
             </h2>
-                <h3>
-                <table class="table">
-                    <thead>
-                            <tr class="even">
-                                <th>Клиент</th>
-                                <th>Предмет</th>
-                                <th>Количество</th>
-                                <th>Итог</th>
-                                <th>Дата покупки</th>
-                            </tr>
-                    </thead>
 
-                    <tbody>
-                        {% if d %}
-                            {% for i in d %}
-                                <tr>
-                                    <td class="la">{{ i.customer }}</td>
-                                    <td>{{ i.item }}</td>
-                                    <td>{{ i.quantity }}</td>
-                                    <td>{{ i.total }}</td>
-                                    <td>{{ i.date|truncatechars:17 }}</td>
+            {% if d %}
+                <h3>
+                    <table class="table">
+                        <thead>
+
+                                <tr class="even">
+                                    <th>Клиент</th>
+                                    <th>Предмет</th>
+                                    <th>Количество</th>
+                                    <th>Итог</th>
+                                    <th>Дата покупки</th>
                                 </tr>
-                            {% endfor %}
-                        {% endif %}
-                    </tbody>
-                </table>
-            </h3>
+                        </thead>
+
+                        <tbody>
+                                {% for i in d %}
+                                    <tr>
+                                        <td class="la">{{ i.customer }}</td>
+                                        <td>{{ i.item }}</td>
+                                        <td>{{ i.quantity }}</td>
+                                        <td>{{ i.total }}</td>
+                                        <td>{{ i.date|truncatechars:17 }}</td>
+                                    </tr>
+                                {% endfor %}
+                        </tbody>
+                    </table>
+                </h3>
+        {% endif %}
         </div>
-            --------------------
-    {% endif %}
-    ------------------------
     </body>
 {% endblock content %}
 </html>

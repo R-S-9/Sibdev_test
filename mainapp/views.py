@@ -1,6 +1,7 @@
 import csv
 import decimal
 import json
+import os
 from operator import itemgetter
 from collections import OrderedDict
 import pandas as pd
@@ -38,17 +39,29 @@ def index(request):
             if not data:
                 err = 'Произошла ошибка.\nВ отправленом вами файле нет ' \
                       'данных. Проверте файл и отправьте файл повторно.'
+
             elif type(data) is str:
                 err = data
-                data = ''
-            elif type(data) is list:
-                data = len(data)
 
-            df = pd.read_csv('media/' + filename)
+            try:
+                df = pd.read_csv('media/' + filename)
+                json_records = df.reset_index().to_json(orient='records')
+                geeks_object = json.loads(json_records)
+            except UnicodeDecodeError:
+                err = 'Ошибка в кодировании или файле.'
+                geeks_object = False
 
-            json_records = df.reset_index().to_json(orient='records')
+            except pd.errors.ParserError:
+                err = 'Ошибка файла.'
+                geeks_object = False
 
-            geeks_object = json.loads(json_records)
+            finally:
+                os.remove('media/' + filename)
+
+                if type(data) is list:
+                    data = len(data)
+                else:
+                    data = ''
 
             return render(request, 'csv_output.html', {
                 'csv_error': err,
@@ -72,69 +85,92 @@ def is_adv_digit(digit):
     return digit
 
 
-def handle_uploaded_file(file):
+def handle_uploaded_file(media_file):
     """Фун-ия для чтения и записи в bd полученых данных"""
 
     data = []
+    error = False
 
-    with open('media/' + file, mode="r", encoding='utf-8') as file:
+    with open('media/' + media_file, mode="r", encoding='utf-8') as file:
         read = csv.DictReader(file, delimiter=",", lineterminator="\r")
-        for content in read:
 
-            if content['customer'] == '':
-                return 'Ошибка логина.'
+        try:
+            for content in read:
+                try:
+                    if content['customer'] == '':
+                        return 'Ошибка логина.'
 
-            if content['item'] == '':
-                return 'Ошибка имени предмета.'
+                    if content['item'] == '':
+                        return 'Ошибка имени предмета.'
 
-            if is_adv_digit(content['total']) is False:
-                return 'Ошибка чека - Не число.'
-            elif is_adv_digit(content['total']) is ValidationError:
-                return 'Ошибка чека - Итог не может быть отрицательным.'
+                    if is_adv_digit(content['total']) is False:
+                        return 'Ошибка чека - Не число.'
 
-            if is_adv_digit(content['quantity']) is False:
-                return 'Ошибка в кол-ве предметов - не число.'
-            elif is_adv_digit(content['quantity']) is ValidationError:
-                return 'Ошибка в данных. Кол-во не может быть отрицательным.'
+                    elif is_adv_digit(content['total']) is ValidationError:
+                        return 'Ошибка чека - Итог не может быть ' \
+                               'отрицательным.'
 
-            data.append({
-                'customer': content['customer'],
-                'item': content['item'],
-                'total': content['total'],
-                'quantity': content['quantity'],
-                'date_time': content['date'][:16],
-            })
+                    if is_adv_digit(content['quantity']) is False:
+                        return 'Ошибка в кол-ве предметов - не число.'
 
-            try:
-                post_form = CustomerLog.objects.create(
-                    customer=content['customer'],
-                    date=content['date']
-                )
-            except ValidationError:
-                return 'Ошибка в дате. Значение должно быть в формате ' \
-                       'YYYY-MM-DD HH:MM[:ss[.uuuuuu]][TZ].'
-            post_form.save()
+                    elif is_adv_digit(content['quantity']) is ValidationError:
+                        return 'Ошибка в данных. Кол-во не может быть ' \
+                               'отрицательным.'
 
-            try:
-                pur_item = PurchasedItems.objects.create(
-                    customer_item_id=post_form.id,
-                    item=content['item'],
-                    total=content['total'],
-                    quantity=content['quantity'],
-                )
-            except decimal.InvalidOperation:
-                return 'Ваше число намного больше чем это прописано в ' \
-                       'модели. Пожалуйста, проверьте точность данных или ' \
-                       'измените модель total/max_digits=(на то число, ' \
-                       'которое подходит для вас)'
-            except ValidationError:
-                return 'Произошла ошибка. Значение чек/total должно быть ' \
-                       'десятичным числом.'
-            except ValueError:
-                return 'Произошла ошибка в кол-ве купленных преметов.'
+                except KeyError:
+                    error = True
+                    break
 
-            post_form.save()
-            pur_item.save()
+                data.append({
+                    'customer': content['customer'],
+                    'item': content['item'],
+                    'total': content['total'],
+                    'quantity': content['quantity'],
+                    'date_time': content['date'][:16],
+                })
+
+                try:
+                    post_form = CustomerLog.objects.create(
+                        customer=content['customer'],
+                        date=content['date']
+                    )
+
+                except ValidationError:
+                    return 'Ошибка в дате. Значение должно быть в формате ' \
+                           'YYYY-MM-DD HH:MM[:ss[.uuuuuu]][TZ].'
+
+                post_form.save()
+
+                try:
+                    pur_item = PurchasedItems.objects.create(
+                        customer_item_id=post_form.id,
+                        item=content['item'],
+                        total=content['total'],
+                        quantity=content['quantity'],
+                    )
+
+                except decimal.InvalidOperation:
+                    return 'Ваше число намного больше чем это прописано в ' \
+                           'модели. Пожалуйста, проверьте точность данных ' \
+                           'или измените модель total/max_digits=(на то ' \
+                           'число, которое подходит для вас)'
+
+                except ValidationError:
+                    return 'Произошла ошибка. Значение чек/total должно быть' \
+                           'десятичным числом.'
+
+                except ValueError:
+                    return 'Произошла ошибка в кол-ве купленных преметов.'
+
+                post_form.save()
+                pur_item.save()
+
+        except UnicodeDecodeError:
+            data = 'Проверьте файл и кодировку.'
+
+    if error:
+        data = 'Ошибка в файле или в данных в нем. Возможно вы отправили ' \
+               'не csv файл. Проверте файл и попытайтесь снова.'
 
     return data
 
@@ -239,14 +275,16 @@ def top_clients(request):
             }
         )
 
-    # TODO Если список пустой, выводить определенное сообщение.
-
-    print(output_data)
-
     '''
         Сделать отдельный список gems в котором будет отдельные предметы и 
         рядом список тех, кто купил его больше 2х раз.
     '''
+
+    # CustomerLog.objects.all().delete()
+
+    if not output_data:
+        output_data = 'Ошибка в файле. Повторите попытку загрузив данные с ' \
+                      'файла снова'
 
     return render(request, 'csv_output.html', context={
         'output_data': output_data

@@ -234,15 +234,14 @@ def top_clients(request):
 
     # Топ 5 клиентов (Логины, потраченые средства)
     data = data[:5]
-
     gems_customer = user_gems(data)
-
     lol = [item.get('username') for item in data]
-
-    gems_of_customer = []  # Список для хранения предметов топ 5 клиентов.
     output_data = []
 
     for j in range(len(gems_customer)):
+        gems_of_customer = []  # Список для хранения предметов топ 5 клиентов.
+        last_value = []
+
         for i in gems_customer[j]:
             list_of_customer = CustomerLog.objects.filter(
                 pur_item__item=i,
@@ -251,40 +250,58 @@ def top_clients(request):
 
             list_of_customer = list(OrderedDict.fromkeys(list_of_customer))
 
+            if list_of_customer in last_value:
+                print(list_of_customer)
+                break
+            else:
+                print('Добавлен')
+                # print(list_of_customer)
+                last_value.append(list_of_customer)
+
             gems_of_customer.append({
                 'customer': list_of_customer,
                 'gems': i
             })
 
+            last_value.append(i)
+
         customer_log = data[j].get('username')
         customer_top_spent_money = data[j].get('spent_money')
 
-        gems_name = gems_of_customer[j].get('gems')
+        gems_name = ''
+        for k in gems_of_customer:
+            gems_name = k.get('gems')
 
         identical_gems = [
             j for item in gems_of_customer for j in item.get('customer')
             if j in lol
         ]
 
+        if len(identical_gems) == 1:
+            identical_gems = ''
+
         output_data.append(
             {
-                'customer_log': customer_log,
-                'customer_top_spent_money': customer_top_spent_money,
-                'gems_name': gems_name,
-                'identical_gems': identical_gems,
+                'customer_log': customer_log,  # Покупатель.
+                'customer_top_spent_money': customer_top_spent_money,  # Сумма.
+                'gems_name': gems_name,  # Предмет покупки.
+                'identical_gems': identical_gems,  # Купил вместе с
+                # (из топ 5 покупателей).
             }
         )
-
-    '''
-        Сделать отдельный список gems в котором будет отдельные предметы и 
-        рядом список тех, кто купил его больше 2х раз.
-    '''
 
     # CustomerLog.objects.all().delete()
 
     if not output_data:
         output_data = 'Ошибка в файле. Повторите попытку загрузив данные с ' \
                       'файла снова'
+
+    # Цикл вывода данных из конечной переменной.
+    for i in output_data:
+        print('Покупатель: ' + str(i.get('customer_log')) + ', на сумму  ' +
+              str(i.get('customer_top_spent_money')) + '. купил -  ' +
+              str(i.get('gems_name')) + '.   кто купил:  ' +
+              str(i.get('identical_gems')) + '.')
 
     return render(request, 'csv_output.html', context={
         'output_data': output_data

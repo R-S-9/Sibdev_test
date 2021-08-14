@@ -1,10 +1,8 @@
 from django.urls import path
 
-from .views import index, del_all_db, top_clients
+from .views import index
 
 
 urlpatterns = [
     path('', index),
-    path('del', del_all_db),
-    path('top', top_clients)
 ]
